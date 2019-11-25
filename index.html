@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+	<title>Morse code</title>
+	<link rel="icon" type="image/x-icon" href="./favicon.ico">
+	<link rel="stylesheet" href="./css/bootstrap.css" >
+	<script src="./js/jquery-3.4.1.min.js"></script>
+	<script src="./js/bootstrap.js"></script>
+	<script src="./js/main.js"></script>
+</head>
+<body>
+<div class="container py-4">
+	<div class="row justify-content-center">
+		<h4>
+			Morse code project (Information Security)
+		</h4>
+	</div>
+</div>
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group">
+				<label for="text">Text</label>
+				<textarea class="form-control" rows="5" id="text" placeholder="Write your text to encode to Morse code"></textarea>
+			</div>
+			<button type="button" id="playInMorseCode" class="btn btn-primary">Play in Morse Code</button>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group">
+				<label for="morseCode">Morse Code</label>
+				<textarea class="form-control" rows="5" id="morseCode" placeholder="Write morse code to decode to text"></textarea>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<br>
+<hr>
+<br>
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group">
+				<label for="morseCode">Morse Encoded</label>
+				<textarea class="form-control" rows="5" id="morseDecoded" placeholder="There will appear listened codes" readonly></textarea>
+			</div>
+			<button type="button" id="listenMorseSignal" class="btn btn-primary">Listen Morse Signal</button>
+			<button type="button" id="notListenMorseSignal" class="btn btn-danger" disabled>Stop To Listening</button>
+			<button type="button" id="clearMorseSignal" class="btn btn-default">Clear</button>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group">
+				<label for="morseCode">Morse Decoded</label>
+				<textarea class="form-control" rows="5" id="morseEncoded" placeholder="There will appear decoded from listened codes" readonly></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        let textElement = $('#text');
+        let morseCodeElement = $('#morseCode');
+        textElement.keyup(function(){
+            let result = [];
+            let text = textElement.val().toUpperCase().split('');
+            for(let i = 0; i < text.length; i++){
+                let gotCode = getCode(text[i]);
+                result.push((gotCode == ' ' ? '' : gotCode));
+            }
+            morseCodeElement.val(result.join(' '));
+        });
+
+        morseCodeElement.keyup(function(){
+            let result = [];
+            let text = morseCodeElement.val().split(' ');
+            for(let i = 0; i < text.length; i++){
+                let gotChar = getCharacter(text[i]);
+                result.push((gotChar == '#' ? ' ' : gotChar));
+            }
+            textElement.val(result.join(''));
+        });
+
+        $('#playInMorseCode').click(function () {
+            start(morseCodeElement.val());
+            //toggle();
+        });
+
+        let morseDecodedElement = $('#morseDecoded');
+        let morseEncodedElement = $('#morseEncoded');
+        document.addEventListener('gotSignal', function (e) {
+
+
+            let initialText = morseDecodedElement.val() + e.detail.message;
+            morseDecodedElement.val(initialText);
+
+            let result = [];
+            let text = initialText.split(' ');
+            for(let i = 0; i < text.length; i++){
+                let gotChar = getCharacter(text[i]);
+                result.push((gotChar == '#' ? ' ' : gotChar));
+            }
+            morseEncodedElement.val(result.join(''));
+        });
+
+        document.addEventListener('signallingStarted', function (e) {
+            $('#playInMorseCode').attr('disabled', true);
+        });
+
+        document.addEventListener('signallingStopped', function (e) {
+            $('#playInMorseCode').attr('disabled', false);
+        });
+
+
+        let morseListenButton = $('#listenMorseSignal');
+        let morseNotListenButton = $('#notListenMorseSignal');
+
+        morseListenButton.click(function () {
+            morseListenButton.prop('disabled', true);
+            morseNotListenButton.prop('disabled', false);
+            listen();
+        });
+
+        morseNotListenButton.click(function () {
+            morseListenButton.prop('disabled', false);
+            morseNotListenButton.prop('disabled', true);
+            listen();
+        });
+
+        let clearMorseSignalButton = $('#clearMorseSignal');
+
+        clearMorseSignalButton.click(function () {
+            morseDecodedElement.val('');
+            morseEncodedElement.val('');
+            listen();
+        });
+    });
+</script>
+</body>
+</html>
